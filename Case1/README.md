@@ -1,6 +1,6 @@
 # Danny's Diner
 
-[Case Study 1](https://8weeksqlchallenge.com/case-study-1/)
+[Case Study #1](https://8weeksqlchallenge.com/case-study-1/)
 
 ![Dannys](https://8weeksqlchallenge.com/images/case-study-designs/1.png)
 
