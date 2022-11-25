@@ -1,3 +1,10 @@
+# Danny's Diner
+
+[Case Study 1](https://8weeksqlchallenge.com/case-study-1/)
+
+![Dannys](https://8weeksqlchallenge.com/images/case-study-designs/1.png)
+
+
 1. What is the total amount each customer spent at the restaurant?
 ```sql
 SELECT dannys_diner.sales.customer_id as "Customer", SUM(dannys_diner.menu.price) as "Total Spent"
