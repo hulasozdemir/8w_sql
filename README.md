@@ -1,4 +1,4 @@
-# 8 Week SQL -  Solutions for case studies
+# 8 Week SQL -  Solutions
 [8 Week SQL Challenge](https://8weeksqlchallenge.com/)
 
 In this repo, I publish my solutions for 8 Weeks SQL challenge.
