@@ -254,11 +254,7 @@ FROM dannys_diner.sales
 LEFT JOIN dannys_diner.members ON dannys_diner.sales.customer_id = dannys_diner.members.customer_id
 LEFT JOIN dannys_diner.menu ON dannys_diner.sales.product_id = dannys_diner.menu.product_id
 )
--- , TEMP2 AS(SELECT TEMP.customer_id, SUM(TEMP.price) as total_spent_before_membership
--- FROM TEMP
--- WHERE "members?" IS False
--- GROUP BY TEMP.customer_id
---           )
+
 SELECT TEMP.customer_id, SUM(TEMP.points) as total_points
 FROM TEMP
 GROUP BY TEMP.customer_id
@@ -297,7 +293,7 @@ WHERE dannys_diner.sales.order_date <= '2021-01-31'
 
 SELECT  TEMP.customer_id, SUM(
   CASE 
-            WHEN ((TEMP.order_date >= TEMP.join_date) AND (TEMP.bonus_deal_expires >= TEMP.order_date)) THEN TEMP.price * 2 * 10
+            WHEN (TEMP.order_date BETWEEN TEMP.join_date AND TEMP.bonus_deal_expires) THEN TEMP.price * 2 * 10
             WHEN (TEMP.product_name = 'sushi') THEN TEMP.price * 2 * 10
     		ELSE TEMP.price * 10
 		END)
