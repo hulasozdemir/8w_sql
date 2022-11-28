@@ -231,6 +231,86 @@ GROUP BY TEMP.customer_id
 
 ---
 
+9.  If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
 
+```sql
+WITH TEMP AS (SELECT dannys_diner.sales.customer_id, 
+       dannys_diner.sales.order_date,
+       dannys_diner.members.join_date,
+       dannys_diner.sales.product_id,
+       dannys_diner.menu.product_name,
+       dannys_diner.menu.price,
+		CASE WHEN (dannys_diner.members.customer_id = dannys_diner.sales.customer_id) AND (dannys_diner.sales.order_date >= dannys_diner.members.join_date)
+        	THEN True
+    		ELSE False
+		END as "members?",
+        
+        CASE WHEN (dannys_diner.menu.product_name = 'sushi')
+        	THEN dannys_diner.menu.price * 10 * 2 
+    		ELSE dannys_diner.menu.price * 10
+		END as "points"
+        
+FROM dannys_diner.sales
+LEFT JOIN dannys_diner.members ON dannys_diner.sales.customer_id = dannys_diner.members.customer_id
+LEFT JOIN dannys_diner.menu ON dannys_diner.sales.product_id = dannys_diner.menu.product_id
+)
+-- , TEMP2 AS(SELECT TEMP.customer_id, SUM(TEMP.price) as total_spent_before_membership
+-- FROM TEMP
+-- WHERE "members?" IS False
+-- GROUP BY TEMP.customer_id
+--           )
+SELECT TEMP.customer_id, SUM(TEMP.points) as total_points
+FROM TEMP
+GROUP BY TEMP.customer_id
+```
+
+
+| customer_id | total_points |
+| ----------- | ------------ |
+| A           | 860          |
+| B           | 940          |
+| C           | 360          |
+
+---
+
+10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
+
+```sql
+WITH TEMP AS (SELECT dannys_diner.sales.customer_id, 
+       dannys_diner.sales.order_date,
+       dannys_diner.members.join_date,
+       dannys_diner.members.join_date + INTERVAL '6 day' AS bonus_deal_expires,
+       dannys_diner.sales.product_id,
+       dannys_diner.menu.product_name,
+       dannys_diner.menu.price,
+		CASE WHEN (dannys_diner.members.customer_id = dannys_diner.sales.customer_id) AND (dannys_diner.sales.order_date >= dannys_diner.members.join_date)
+        	THEN True
+    		ELSE False
+		END as "members?"
+        
+FROM dannys_diner.sales
+INNER JOIN dannys_diner.members ON dannys_diner.sales.customer_id = dannys_diner.members.customer_id
+INNER JOIN dannys_diner.menu ON dannys_diner.sales.product_id = dannys_diner.menu.product_id
+WHERE dannys_diner.sales.order_date <= '2021-01-31'
+)
+
+
+SELECT  TEMP.customer_id, SUM(
+  CASE 
+            WHEN ((TEMP.order_date >= TEMP.join_date) AND (TEMP.bonus_deal_expires >= TEMP.order_date)) THEN TEMP.price * 2 * 10
+            WHEN (TEMP.product_name = 'sushi') THEN TEMP.price * 2 * 10
+    		ELSE TEMP.price * 10
+		END)
+FROM TEMP
+GROUP BY customer_id
+
+```
+
+| customer_id | sum  |
+| ----------- | ---  |
+| A           | 1370 |
+| B           | 820  |
+
+---
 
 
