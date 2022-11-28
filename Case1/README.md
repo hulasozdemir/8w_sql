@@ -125,7 +125,7 @@ ORDER BY customer_id
 
 ---
 
--- 6. Which item was purchased first by the customer after they became a member?
+6. Which item was purchased first by the customer after they became a member?
 
 ```sql
 WITH TEMP AS (SELECT dannys_diner.sales.customer_id, 
@@ -161,8 +161,75 @@ FROM (SELECT TEMP.customer_id, TEMP.product_name, TEMP.order_date FROM TEMP INNE
 
 ---
 
+7. Which item was purchased just before the customer became a member?
+
+```sql
+WITH TEMP AS (SELECT dannys_diner.sales.customer_id, 
+       dannys_diner.sales.order_date,
+       dannys_diner.members.join_date,
+       dannys_diner.sales.product_id,
+       dannys_diner.menu.product_name,
+       dannys_diner.menu.price,
+		CASE WHEN (dannys_diner.members.customer_id = dannys_diner.sales.customer_id) AND (dannys_diner.sales.order_date >= dannys_diner.members.join_date)
+        	THEN True
+    		ELSE False
+		END as "members?"
+FROM dannys_diner.sales
+LEFT JOIN dannys_diner.members ON dannys_diner.sales.customer_id = dannys_diner.members.customer_id
+LEFT JOIN dannys_diner.menu ON dannys_diner.sales.product_id = dannys_diner.menu.product_id
+)
+, TEMP2 AS(SELECT TEMP.customer_id, max(TEMP.order_Date) as last_order_before_membership
+FROM TEMP
+WHERE "members?" IS False
+GROUP BY TEMP.customer_id
+          )
 
 
+SELECT *
+FROM (SELECT TEMP.customer_id, TEMP.product_name, TEMP.order_date FROM TEMP INNER JOIN TEMP2 ON (TEMP.customer_id = TEMP2.customer_id) AND (TEMP.order_date = TEMP2.last_order_before_membership)) X
+```
+
+
+| customer_id | product_name | order_date               |
+| ----------- | ------------ | ------------------------ |
+| A           | sushi        | 2021-01-01T00:00:00.000Z |
+| A           | curry        | 2021-01-01T00:00:00.000Z |
+| B           | sushi        | 2021-01-04T00:00:00.000Z |
+| C           | ramen        | 2021-01-07T00:00:00.000Z |
+
+---
+
+8. What is the total items and amount spent for each member before they became a member?
+
+```sql
+WITH TEMP AS (SELECT dannys_diner.sales.customer_id, 
+       dannys_diner.sales.order_date,
+       dannys_diner.members.join_date,
+       dannys_diner.sales.product_id,
+       dannys_diner.menu.product_name,
+       dannys_diner.menu.price,
+		CASE WHEN (dannys_diner.members.customer_id = dannys_diner.sales.customer_id) AND (dannys_diner.sales.order_date >= dannys_diner.members.join_date)
+        	THEN True
+    		ELSE False
+		END as "members?"
+FROM dannys_diner.sales
+LEFT JOIN dannys_diner.members ON dannys_diner.sales.customer_id = dannys_diner.members.customer_id
+LEFT JOIN dannys_diner.menu ON dannys_diner.sales.product_id = dannys_diner.menu.product_id
+)
+
+SELECT TEMP.customer_id, SUM(TEMP.price) as total_spent_before_membership
+FROM TEMP
+WHERE "members?" IS False
+GROUP BY TEMP.customer_id
+```
+
+| customer_id | total_spent_before_membership |
+| ----------- | ----------------------------- |
+| B           | 40                            |
+| C           | 36                            |
+| A           | 25                            |
+
+---
 
 
 
