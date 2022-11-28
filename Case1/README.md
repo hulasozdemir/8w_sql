@@ -124,3 +124,46 @@ ORDER BY customer_id
 | C           | ramen        | 3              |
 
 ---
+
+-- 6. Which item was purchased first by the customer after they became a member?
+
+```sql
+WITH TEMP AS (SELECT dannys_diner.sales.customer_id, 
+       dannys_diner.sales.order_date,
+       dannys_diner.members.join_date,
+       dannys_diner.sales.product_id,
+       dannys_diner.menu.product_name,
+       dannys_diner.menu.price,
+		CASE WHEN (dannys_diner.members.customer_id = dannys_diner.sales.customer_id) AND (dannys_diner.sales.order_date >= dannys_diner.members.join_date)
+        	THEN True
+    		ELSE False
+		END as "members?"
+FROM dannys_diner.sales
+LEFT JOIN dannys_diner.members ON dannys_diner.sales.customer_id = dannys_diner.members.customer_id
+LEFT JOIN dannys_diner.menu ON dannys_diner.sales.product_id = dannys_diner.menu.product_id
+)
+, TEMP2 AS(SELECT TEMP.customer_id, min(TEMP.order_Date) as first_order
+FROM TEMP
+WHERE "members?" IS TRUE
+GROUP BY TEMP.customer_id
+          )
+
+
+SELECT *
+FROM (SELECT TEMP.customer_id, TEMP.product_name, TEMP.order_date FROM TEMP INNER JOIN TEMP2 ON (TEMP.customer_id = TEMP2.customer_id) AND (TEMP.order_date = TEMP2.first_order)) X
+```
+
+
+| customer_id | product_name | order_date               |
+| ----------- | ------------ | ------------------------ |
+| A           | curry        | 2021-01-07T00:00:00.000Z |
+| B           | sushi        | 2021-01-11T00:00:00.000Z |
+
+---
+
+
+
+
+
+
+
