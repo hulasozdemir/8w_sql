@@ -5,3 +5,4 @@
 
 ## Case Studies
 1. [Danny's Diner](https://github.com/hulasozdemir/8w_sql/tree/main/Case1)
+2. [Pizza Runner](https://github.com/hulasozdemir/8w_sql/tree/main/Case2)
